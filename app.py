@@ -19,7 +19,6 @@ Base = declarative_base()
 # Iniciar la aplicación Flask
 app = Flask(__name__)
 
-
 # Definir el modelo Taxi
 class Taxi(Base):
     __tablename__ = "taxis"
@@ -35,8 +34,22 @@ def get_taxis():
     session = SessionLocal()
     # Obtener parámetros de paginación y filtrado
     plate_filter = request.args.get('plate')
-    page = int(request.args.get('page', 1))
-    per_page = int(request.args.get('per_page', 10))
+
+    # Verificar que el número de página esté entre 1 y 10
+    try:
+        page = int(request.args.get('page', 1))
+        if page < 1 or page > 10:
+            page = 10
+    except ValueError:
+        page = 1  # Valor por defecto si no es un número válido
+
+    # Verificar que el número de resultados por página esté entre 1 y 10
+    try:
+        limit = int(request.args.get('limit', 10))
+        if limit < 1 or limit > 10:
+            limit = 10
+    except ValueError:
+        limit = 10  # Valor por defecto si no es un número válido
 
     # Construir la consulta
     query = session.query(Taxi)
@@ -44,7 +57,7 @@ def get_taxis():
         query = query.filter(Taxi.plate.ilike(f'%{plate_filter}%'))
 
     # Paginación
-    taxis = query.offset((page - 1) * per_page).limit(per_page).all()
+    taxis = query.offset((page - 1) * limit).limit(limit).all()
 
     # Preparar la respuesta
     result = [{"id": taxi.id, "plate": taxi.plate} for taxi in taxis]
