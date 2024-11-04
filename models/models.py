@@ -13,6 +13,9 @@ class Taxi(Base):
     id = Column(Integer, primary_key=True, index=True)
     plate = Column(String, index=True)
 
+    # Relación uno a muchos con la tabla de trayectorias
+    trajectories = relationship("Trajectory", back_populates="taxi")
+
 # Modelo para la tabla de trayectorias
 class Trajectory(Base):
     """
